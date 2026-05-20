@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aurum Hub Suomi</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0d14;color:#e2e8f0;font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;padding-bottom:60px}
+input{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:8px;color:#e2e8f0;padding:9px 13px;font-size:14px;outline:none;width:100%}
+input::placeholder{color:rgba(255,255,255,0.3)}
+button{cursor:pointer;font-weight:700;font-size:13px;border:none;border-radius:8px;padding:9px 18px;font-family:inherit}
+.btn-g{background:linear-gradient(90deg,#00e5a0,#38bdf8);color:#07090f;font-weight:800}
+.btn-g.full{width:100%;padding:12px;font-size:15px}
+.btn-soft{background:rgba(255,255,255,0.08);color:#e2e8f0}
+.btn-del{background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.25)}
+
+/* layout */
+#hdr{padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between}
+#logo{font-size:18px;font-weight:900;background:linear-gradient(90deg,#00e5a0,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#huser{font-size:12px;color:rgba(255,255,255,0.4)}
+#main{max-width:900px;margin:0 auto;padding:28px 18px 0}
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+.lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:.8px;margin-bottom:5px;text-transform:uppercase}
+.field{margin-bottom:10px}
+.err{color:#f87171;font-size:13px;padding:7px 11px;background:rgba(248,113,113,0.1);border-radius:7px;margin:6px 0;display:none}
+.ok{color:#00e5a0;font-size:13px;padding:7px 11px;background:rgba(0,229,160,0.08);border-radius:7px;margin:6px 0;display:none}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.field{flex:1;min-width:140px}
+
+/* stats */
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.stat{flex:1;min-width:100px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:14px 16px;text-align:center}
+.stat.me{background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.3)}
+.stat-n{font-size:28px;font-weight:900;color:#00e5a0;line-height:1}
+.stat-n.gold{color:#fbbf24}
+.stat-l{font-size:12px;color:rgba(255,255,255,0.4);margin-top:3px}
+
+/* TREE */
+.tree-scroll{overflow-x:auto;padding:10px 0 4px}
+.tree-root{display:flex;justify-content:center;list-style:none;padding:0;margin:0}
+.t-li{display:flex;flex-direction:column;align-items:center;position:relative;padding:0 6px}
+
+/* horizontal lines between siblings */
+.t-li::before,.t-li::after{content:'';position:absolute;top:0;width:50%;height:2px;background:rgba(0,229,160,0.28)}
+.t-li::before{left:0}.t-li::after{right:0}
+.t-li:first-child::before,.t-li:last-child::after{display:none}
+
+/* connector from line down to node */
+.t-connector{width:2px;height:20px;background:rgba(0,229,160,0.28);flex-shrink:0}
+.t-root-connector{display:none}
+
+/* node box */
+.t-node{background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 12px;min-width:100px;max-width:150px;text-align:center;position:relative;flex-shrink:0}
+.t-node.me{background:linear-gradient(135deg,rgba(0,229,160,0.18),rgba(56,189,248,0.12));border-color:#00e5a0}
+.t-node.ldr{background:rgba(251,191,36,0.09);border-color:rgba(251,191,36,0.38)}
+.t-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-code{font-size:10px;color:rgba(255,255,255,0.38);font-family:monospace;letter-spacing:.5px;margin-top:2px}
+.t-badge{font-size:9px;font-weight:700;color:#fbbf24;border:1px solid rgba(251,191,36,0.45);border-radius:4px;padding:1px 4px;margin-top:3px;display:inline-block}
+
+/* down line from node to children */
+.t-down{width:2px;height:20px;background:rgba(0,229,160,0.28);flex-shrink:0}
+
+/* children row */
+.t-children{display:flex;list-style:none;padding:0;margin:0;position:relative}
+/* top horizontal line spanning children */
+.t-children::before{content:'';position:absolute;top:0;left:50px;right:50px;height:2px;background:rgba(0,229,160,0.28)}
+.t-children:only-child::before,.t-children.single::before{display:none}
+
+/* delete button on node */
+.t-del{position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:#f87171;color:#fff;font-size:11px;font-weight:900;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;padding:0;line-height:1}
+.t-node:hover .t-del{display:flex}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <div id="logo">🌳 Aurum Hub Suomi</div>
+  <div id="huser"></div>
+</div>
+<div id="main"></div>
+
+<script>
+// ── DB ────────────────────────────────────────────────────────────────────────
+var LEADERS = ["2P45R8","84DDK4","4DX2ER"];
+var DEFAULT = [
+  {code:"2P45R8", name:"Jenna", role:"leader", ref:null},
+  {code:"84DDK4", name:"Terhi", role:"leader", ref:"2P45R8"},
+  {code:"4DX2ER", name:"Karhu", role:"leader", ref:"84DDK4"}
+];
+var DB;
+try { DB = JSON.parse(localStorage.getItem("aurum3") || "null") || {members: JSON.parse(JSON.stringify(DEFAULT))}; }
+catch(e) { DB = {members: JSON.parse(JSON.stringify(DEFAULT))}; }
+function save(){ try{ localStorage.setItem("aurum3", JSON.stringify(DB)); }catch(e){} }
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var WHO = null;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function buildTree(code){
+  var r = DB.members.find(function(m){ return m.code===code; });
+  if(!r) return null;
+  return Object.assign({},r,{children: DB.members.filter(function(m){return m.ref===code;}).map(function(c){return buildTree(c.code);}).filter(Boolean)});
+}
+function countAll(n){ if(!n||!n.children||!n.children.length) return 0; return n.children.reduce(function(s,c){return s+1+countAll(c);},0); }
+function gv(id){ var e=document.getElementById(id); return e?e.value.trim():""; }
+function showE(id,msg){ var e=document.getElementById(id); if(e){e.textContent=msg;e.style.display="block";} }
+function hideE(id){ var e=document.getElementById(id); if(e) e.style.display="none"; }
+function showOK(id,msg){ var e=document.getElementById(id); if(e){e.textContent=msg;e.style.display="block";setTimeout(function(){e.style.display="none";},4000);} }
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render(){
+  var main = document.getElementById("main");
+  var hu   = document.getElementById("huser");
+  main.innerHTML = "";
+  if(!WHO){
+    hu.innerHTML = "";
+    main.appendChild(renderLogin());
+  } else {
+    var me = DB.members.find(function(m){return m.code===WHO;});
+    hu.innerHTML = (me?me.name+" &nbsp;":"")+' <code style="color:#00e5a0">#'+WHO+'</code>';
+    main.appendChild(renderHub());
+  }
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+function renderLogin(){
+  var w = document.createElement("div");
+  w.innerHTML = [
+    '<div class="card" style="max-width:400px;margin:0 auto">',
+    '<h2 style="font-weight:800;font-size:22px;margin-bottom:4px">Tervetuloa 🌳</h2>',
+    '<p style="color:rgba(255,255,255,0.4);font-size:14px;margin-bottom:18px">Johtajat kirjautuvat omalla Aurum-koodilla</p>',
+    '<div class="lbl">Aurum-koodi</div>',
+    '<input id="lcode" placeholder="Syötä koodisi" style="margin-bottom:10px"/>',
+    '<div class="err" id="lerr"></div>',
+    '<button class="btn-g full" id="lbtn">Kirjaudu →</button>',
+    '</div>'
+  ].join("");
+  w.querySelector("#lbtn").onclick = doLogin;
+  setTimeout(function(){
+    var i = document.getElementById("lcode");
+    if(i) i.onkeydown = function(e){ if(e.key==="Enter") doLogin(); };
+  },50);
+  return w;
+}
+function doLogin(){
+  var val = gv("lcode").toUpperCase();
+  var leaders = DB.members.filter(function(m){return m.role==="leader";}).map(function(m){return m.code;});
+  if(leaders.indexOf(val)===-1){ showE("lerr","Pääsy vain johtajille."); return; }
+  WHO = val; render();
+}
+
+// ── HUB ───────────────────────────────────────────────────────────────────────
+function renderHub(){
+  var w = document.createElement("div");
+
+  // header row
+  var hdr = document.createElement("div");
+  hdr.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:16px";
+  var hl = document.createElement("div");
+  hl.innerHTML = '<div style="font-weight:800;font-size:20px">Tiimin puu</div><div style="font-size:12px;color:rgba(255,255,255,0.38);margin-top:2px">'+DB.members.length+' henkilöä yhteensä</div>';
+  var ob = document.createElement("button");
+  ob.className="btn-soft"; ob.textContent="Kirjaudu ulos";
+  ob.onclick = function(){ WHO=null; render(); };
+  hdr.appendChild(hl); hdr.appendChild(ob);
+  w.appendChild(hdr);
+
+  // stats
+  var stats = document.createElement("div");
+  stats.className = "stats";
+  DB.members.filter(function(m){return m.role==="leader";}).forEach(function(l){
+    var t=buildTree(l.code), cnt=t?countAll(t):0, isMe=l.code===WHO;
+    var s = document.createElement("div");
+    s.className = "stat"+(isMe?" me":"");
+    s.innerHTML = '<div class="stat-n'+(isMe?" gold":"")+'">'+cnt+'</div><div class="stat-l">'+l.name+(isMe?" ⭐":"")+'</div>';
+    stats.appendChild(s);
+  });
+  w.appendChild(stats);
+
+  // add form
+  var form = document.createElement("div");
+  form.className = "card";
+  form.innerHTML = [
+    '<div style="font-weight:700;font-size:14px;margin-bottom:12px">➕ Lisää tiimiläinen</div>',
+    '<div class="row">',
+    '  <div class="field"><div class="lbl">Nimi</div><input id="ani" placeholder="Etu- ja sukunimi"/></div>',
+    '  <div class="field"><div class="lbl">Aurum-koodi</div><input id="aci" placeholder="esim. AB1234"/></div>',
+    '  <div class="field"><div class="lbl">Suosittelijan koodi</div><input id="ari" placeholder="Kenen alla?"/></div>',
+    '</div>',
+    '<div class="err" id="aerr"></div>',
+    '<div class="ok"  id="aok"></div>',
+    '<button class="btn-g full" id="abtn">Lisää puuhun →</button>'
+  ].join("");
+  form.querySelector("#abtn").onclick = function(){
+    var n=gv("ani"), c=gv("aci").toUpperCase(), r=gv("ari").toUpperCase();
+    if(!n){ showE("aerr","Nimi puuttuu."); return; }
+    if(!c){ showE("aerr","Koodi puuttuu."); return; }
+    if(!r){ showE("aerr","Suosittelijan koodi puuttuu."); return; }
+    if(DB.members.find(function(m){return m.code===c;})){ showE("aerr","Koodi "+c+" on jo käytössä."); return; }
+    if(!DB.members.find(function(m){return m.code===r;})){ showE("aerr","Suosittelijaa ei löydy: "+r); return; }
+    DB.members.push({code:c,name:n,role:"member",ref:r});
+    save();
+    document.getElementById("ani").value="";
+    document.getElementById("aci").value="";
+    document.getElementById("ari").value="";
+    hideE("aerr");
+    showOK("aok","✅ "+n+" lisätty!");
+    refreshTree();
+    refreshStats();
+  };
+  w.appendChild(form);
+
+  // tree card
+  var tc = document.createElement("div");
+  tc.className = "card";
+  tc.style.paddingBottom = "24px";
+  var tscroll = document.createElement("div");
+  tscroll.className = "tree-scroll";
+  tscroll.id = "tree-scroll";
+  tc.appendChild(tscroll);
+  w.appendChild(tc);
+
+  // store refs for refresh
+  w._statsEl = stats;
+  w._treeEl  = tscroll;
+
+  function refreshStats(){
+    stats.innerHTML="";
+    DB.members.filter(function(m){return m.role==="leader";}).forEach(function(l){
+      var t=buildTree(l.code),cnt=t?countAll(t):0,isMe=l.code===WHO;
+      var s=document.createElement("div");
+      s.className="stat"+(isMe?" me":"");
+      s.innerHTML='<div class="stat-n'+(isMe?" gold":"")+'">'+cnt+'</div><div class="stat-l">'+l.name+(isMe?" ⭐":"")+'</div>';
+      stats.appendChild(s);
+    });
+    hl.innerHTML='<div style="font-weight:800;font-size:20px">Tiimin puu</div><div style="font-size:12px;color:rgba(255,255,255,0.38);margin-top:2px">'+DB.members.length+' henkilöä yhteensä</div>';
+  }
+
+  function refreshTree(){
+    tscroll.innerHTML="";
+    var roots = DB.members.filter(function(m){return !m.ref;});
+    if(!roots.length){
+      tscroll.innerHTML='<div style="color:rgba(255,255,255,0.38);font-size:14px;padding:8px">Ei vielä jäseniä.</div>';
+      return;
+    }
+    var ul = document.createElement("ul");
+    ul.className = "tree-root";
+    roots.forEach(function(r){
+      var t = buildTree(r.code);
+      if(t) ul.appendChild(makeLi(t, true));
+    });
+    tscroll.appendChild(ul);
+  }
+
+  function makeLi(node, isRoot){
+    var li = document.createElement("li");
+    li.className = "t-li";
+
+    // vertical connector from parent line down to node (hidden for root)
+    var conn = document.createElement("div");
+    conn.className = isRoot ? "t-root-connector" : "t-connector";
+    li.appendChild(conn);
+
+    // node box
+    var isMe = node.code===WHO;
+    var isLdr = node.role==="leader";
+    var box = document.createElement("div");
+    box.className = "t-node"+(isMe?" me":isLdr?" ldr":"");
+    box.innerHTML =
+      '<div class="t-name">'+(isMe?"⭐ ":isLdr?"🏅 ":"")+ escHtml(node.name)+'</div>'+
+      '<div class="t-code">#'+node.code+'</div>'+
+      (isLdr?'<div class="t-badge">Johtaja</div>':'')+
+      (!isLdr?'<button class="t-del" title="Poista">×</button>':'');
+
+    // delete button
+    var delBtn = box.querySelector(".t-del");
+    if(delBtn){
+      delBtn.onclick = function(e){
+        e.stopPropagation();
+        if(!confirm("Poista "+node.name+"?")){return;}
+        if(DB.members.some(function(m){return m.ref===node.code;})){
+          alert("Ei voi poistaa — henkilöllä on alaisuudessaan ihmisiä.");return;
+        }
+        DB.members = DB.members.filter(function(m){return m.code!==node.code;});
+        save(); refreshTree(); refreshStats();
+      };
+    }
+    li.appendChild(box);
+
+    // children
+    if(node.children && node.children.length){
+      // down line from node
+      var down = document.createElement("div");
+      down.className = "t-down";
+      li.appendChild(down);
+
+      // children list
+      var ul = document.createElement("ul");
+      ul.className = "t-children"+(node.children.length===1?" single":"");
+      node.children.forEach(function(c){ ul.appendChild(makeLi(c,false)); });
+      li.appendChild(ul);
+    }
+    return li;
+  }
+
+  refreshTree();
+  return w;
+}
+
+function escHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+render();
+</script>
+</body>
+</html>

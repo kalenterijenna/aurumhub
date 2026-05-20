@@ -84,14 +84,15 @@ button{cursor:pointer;font-weight:700;font-size:13px;border:none;border-radius:8
 // ── DB ────────────────────────────────────────────────────────────────────────
 var LEADERS = ["2P45R8","84DDK4","4DX2ER"];
 var DEFAULT = [
-  {code:"2P45R8", name:"Jenna", role:"leader", ref:null},
-  {code:"84DDK4", name:"Terhi", role:"leader", ref:"2P45R8"},
-  {code:"4DX2ER", name:"Karhu", role:"leader", ref:"84DDK4"}
+  {code:"2P45R8", name:"Jenna",   role:"leader", ref:null},
+  {code:"84DDK4", name:"Terhi",   role:"leader", ref:"2P45R8"},
+  {code:"HYWPX2", name:"Minna K", role:"member", ref:"84DDK4"},
+  {code:"4DX2ER", name:"Karhu",   role:"leader", ref:"HYWPX2"}
 ];
 var DB;
-try { DB = JSON.parse(localStorage.getItem("aurum3") || "null") || {members: JSON.parse(JSON.stringify(DEFAULT))}; }
+try { DB = JSON.parse(localStorage.getItem("aurum4") || "null") || {members: JSON.parse(JSON.stringify(DEFAULT))}; }
 catch(e) { DB = {members: JSON.parse(JSON.stringify(DEFAULT))}; }
-function save(){ try{ localStorage.setItem("aurum3", JSON.stringify(DB)); }catch(e){} }
+function save(){ try{ localStorage.setItem("aurum4", JSON.stringify(DB)); }catch(e){} }
 
 // ── State ─────────────────────────────────────────────────────────────────────
 var WHO = null;
